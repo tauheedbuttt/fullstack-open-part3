@@ -3,6 +3,17 @@ const express = require("express");
 const PORT = 3001;
 const app = express();
 
+app.use(express.json());
+
+app.get("/info", (req, res) => {
+  return res.send(`
+    <div>
+        <div>Phonebook has info for ${persons.length} people</div><br/>
+        <div>${new Date()}</div><br/>
+    </div>
+    `);
+});
+
 let persons = [
   {
     id: "1",
@@ -48,13 +59,19 @@ app.delete("/api/persons/:id", (req, res) => {
   return res.status(204).send();
 });
 
-app.get("/info", (req, res) => {
-  return res.send(`
-    <div>
-        <div>Phonebook has info for ${persons.length} people</div><br/>
-        <div>${new Date()}</div><br/>
-    </div>
-    `);
+app.post("/api/persons", (req, res) => {
+  const { name, number } = req.body;
+
+  const id = Math.floor(10000000 + Math.random() * 90000000);
+  const person = {
+    id: `${id}`,
+    name,
+    number,
+  };
+
+  persons.push(person);
+
+  return res.status(200).send(person);
 });
 
 app.listen(PORT, () => {
