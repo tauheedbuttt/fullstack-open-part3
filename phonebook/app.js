@@ -19,36 +19,15 @@ app.use(
 );
 
 app.get("/info", (req, res) => {
-  return res.send(`
-    <div>
-        <div>Phonebook has info for ${persons.length} people</div><br/>
-        <div>${new Date()}</div><br/>
-    </div>
-    `);
+  Person.countDocuments().then((count) => {
+    return res.send(`
+      <div>
+          <div>Phonebook has info for ${count} people</div><br/>
+          <div>${new Date()}</div><br/>
+      </div>
+      `);
+  });
 });
-
-let persons = [
-  {
-    id: "1",
-    name: "Arto Hellas",
-    number: "040-123456",
-  },
-  {
-    id: "2",
-    name: "Ada Lovelace",
-    number: "39-44-5323523",
-  },
-  {
-    id: "3",
-    name: "Dan Abramov",
-    number: "12-43-234345",
-  },
-  {
-    id: "4",
-    name: "Mary Poppendieck",
-    number: "39-23-6423122",
-  },
-];
 
 app.get("/api/persons", (req, res) => {
   Person.find({}).then((notes) => {
@@ -56,23 +35,25 @@ app.get("/api/persons", (req, res) => {
   });
 });
 
-app.get("/api/persons/:id", async (req, res) => {
+app.get("/api/persons/:id", (req, res, next) => {
   const { id } = req.params;
 
-  const person = await Person.findById(id);
-  if (!person) return res.status(400).json({ error: "Person not found" });
-
-  return res.status(200).json(person);
+  Person.findById(id)
+    .then((person) => {
+      if (!person) return res.status(404).json({ error: "Person not found" });
+      return res.status(200).json(person);
+    })
+    .catch((error) => next(error));
 });
 
-app.delete("/api/persons/:id", (req, res) => {
+app.delete("/api/persons/:id", (req, res, next) => {
   const { id } = req.params;
-  const person = persons.find((item) => item.id === id);
-  if (!person) return res.status(404).send({ error: "Person not found" });
 
-  persons = persons.filter((p) => p.id !== id);
-
-  return res.status(204).send();
+  Person.findByIdAndDelete(id)
+    .then((result) => {
+      res.status(204).end();
+    })
+    .catch((error) => next(error));
 });
 
 app.post("/api/persons", (req, res) => {
@@ -80,9 +61,6 @@ app.post("/api/persons", (req, res) => {
 
   if (!name) return res.status(400).json({ error: "name is missing" });
   if (!number) return res.status(400).json({ error: "number is missing" });
-
-  // const existing = Person.findOne({ name });
-  // if (existing) return res.status(400).json({ error: "name must be unique" });
 
   const person = new Person({
     name,
@@ -93,8 +71,46 @@ app.post("/api/persons", (req, res) => {
   });
 });
 
-app.get(/.*/, (req, res) => {
+app.put("/api/persons/:id", (req, res, next) => {
+  const { id } = req.params;
+  const { name, number } = req.body;
+
+  Person.findById(id)
+    .then((person) => {
+      if (!person) {
+        return res.status(404).end();
+      }
+
+      person.name = name;
+      person.number = number;
+
+      return person.save().then((updatedPerson) => {
+        res.json(updatedPerson);
+      });
+    })
+    .catch((error) => next(error));
+});
+
+app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "dist/index.html"));
 });
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: "unknown endpoint" });
+};
+
+// handler of requests with unknown endpoint
+app.use(unknownEndpoint);
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message);
+
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
+  }
+
+  next(error);
+};
+app.use(errorHandler);
 
 module.exports = app;
