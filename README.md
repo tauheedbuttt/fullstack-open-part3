@@ -33,7 +33,7 @@ project-root/
 
 - Serve static files from `dist/`
 - Define API routes under `/api/*`
-- Add a **catch-all route** for React frontend (`/*`)  
+- Add a **base route** for React frontend (`/`)  
   (⚠️ needed to avoid the `path-to-regexp` error on Vercel)
 
 ```js
