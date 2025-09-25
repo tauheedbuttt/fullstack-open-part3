@@ -87,9 +87,16 @@ app.put("/api/persons/:id", (req, res, next) => {
       person.name = name;
       person.number = number;
 
-      return person.save().then((updatedPerson) => {
-        res.json(updatedPerson);
-      });
+      return person
+        .save()
+        .then((updatedPerson) => {
+          res.json(updatedPerson);
+        })
+        .catch((err) => {
+          if (err.errors?.number?.message || err.errors?.name?.message)
+            return res.status(400).json({ error: err.errors?.number?.message });
+          else err;
+        });
     })
     .catch((error) => next(error));
 });
