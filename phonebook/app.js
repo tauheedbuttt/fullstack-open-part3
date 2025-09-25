@@ -56,10 +56,11 @@ app.get("/api/persons", (req, res) => {
   });
 });
 
-app.get("/api/persons/:id", (req, res) => {
+app.get("/api/persons/:id", async (req, res) => {
   const { id } = req.params;
-  const person = persons.find((item) => item.id === id);
-  if (!person) return res.status(404).send({ error: "Person not found" });
+
+  const person = await Person.findById(id);
+  if (!person) return res.status(400).json({ error: "Person not found" });
 
   return res.status(200).json(person);
 });
@@ -80,19 +81,16 @@ app.post("/api/persons", (req, res) => {
   if (!name) return res.status(400).json({ error: "name is missing" });
   if (!number) return res.status(400).json({ error: "number is missing" });
 
-  const existing = persons.find((p) => p.name === name);
-  if (existing) return res.status(400).json({ error: "name must be unique" });
+  // const existing = Person.findOne({ name });
+  // if (existing) return res.status(400).json({ error: "name must be unique" });
 
-  const id = Math.floor(10000000 + Math.random() * 90000000);
-  const person = {
-    id: `${id}`,
+  const person = new Person({
     name,
     number,
-  };
-
-  persons.push(person);
-
-  return res.status(200).send(person);
+  });
+  person.save().then((savedPerson) => {
+    return res.status(200).send(savedPerson);
+  });
 });
 
 app.get(/.*/, (req, res) => {
