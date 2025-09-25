@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static("dist"));
 app.use(express.static(path.join(__dirname, "dist")));
-morgan.token("body", function (req, res) {
+morgan.token("body", function (req) {
   return JSON.stringify(req.body);
 });
 app.use(
@@ -50,7 +50,7 @@ app.delete("/api/persons/:id", (req, res, next) => {
   const { id } = req.params;
 
   Person.findByIdAndDelete(id)
-    .then((result) => {
+    .then(() => {
       res.status(204).end();
     })
     .catch((error) => next(error));
