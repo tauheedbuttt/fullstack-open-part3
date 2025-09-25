@@ -1,12 +1,14 @@
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static("dist"));
+app.use(express.static(path.join(__dirname, "dist")));
 morgan.token("body", function (req, res) {
   return JSON.stringify(req.body);
 });
@@ -87,6 +89,10 @@ app.post("/api/persons", (req, res) => {
   persons.push(person);
 
   return res.status(200).send(person);
+});
+
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(__dirname, "dist/index.html"));
 });
 
 module.exports = app;
