@@ -1,7 +1,9 @@
+require("dotenv").config(); // load .env
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
 const path = require("path");
+const Person = require("./models/person");
 
 const app = express();
 
@@ -49,7 +51,9 @@ let persons = [
 ];
 
 app.get("/api/persons", (req, res) => {
-  return res.status(200).json(persons);
+  Person.find({}).then((notes) => {
+    res.json(notes);
+  });
 });
 
 app.get("/api/persons/:id", (req, res) => {
