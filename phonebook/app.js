@@ -71,7 +71,11 @@ app.post("/api/persons", (req, res, next) => {
     .then((savedPerson) => {
       return res.status(200).send(savedPerson);
     })
-    .catch((error) => next(error));
+    .catch((error) => {
+      if (error.errors?.number?.message || error.errors?.name?.message)
+        return res.status(400).json({ error: error.errors?.number?.message });
+      else next(error);
+    });
 });
 
 app.put("/api/persons/:id", (req, res, next) => {
@@ -95,7 +99,7 @@ app.put("/api/persons/:id", (req, res, next) => {
         .catch((err) => {
           if (err.errors?.number?.message || err.errors?.name?.message)
             return res.status(400).json({ error: err.errors?.number?.message });
-          else err;
+          else throw err;
         });
     })
     .catch((error) => next(error));
