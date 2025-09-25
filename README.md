@@ -3,7 +3,8 @@
 Deployed App: [https://fullstack-open-part3-phonebook.vercel.app/](https://fullstack-open-part3-phonebook.vercel.app/)
 
 ```
-! THIS README.MD was created using CHATGPT. The purpose is to present to the professor with other free deployment possibilities available.
+! THIS README.MD was created using CHATGPT.
+The purpose is to present to the professor with other free deployment possibilities available.
 ```
 
 ---
